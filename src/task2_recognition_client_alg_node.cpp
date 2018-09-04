@@ -2,7 +2,7 @@
 
 Task2RecognitionAlgNode::Task2RecognitionAlgNode(void) :
 algorithm_base::IriBaseAlgorithm<Task2RecognitionAlgorithm>(),
-classifier_module("classifier",ros::this_node::getName()),
+face_recognition("face_recognition",ros::this_node::getName()),
 tts("tts_module",ros::this_node::getName()),
 speech("echo_module",ros::this_node::getName()),
 shirt_detection("shirt_color_detection_module",ros::this_node::getName())
@@ -82,16 +82,15 @@ void Task2RecognitionAlgNode::mainNodeThread(void)
 
     case T2_CHECK_KNOWN_PERSON:
 
-      result = this->classifier_module.classify_current_person(label,acc,error_msg);
-      if (result && label == this->config_.person_kimble){
+      label = this->face_recognition.GetCurrentPerson();
+      if (label == this->config_.person_kimble){
         this->current_person_ = Kimble;
         this->t2_m_s = T2_RETURN_VISITOR;
       }
       else {
-        if (result && label == this->config_.person_postman){
+        if (label == this->config_.person_postman){
           this->current_person_ = Postman;
           this->t2_m_s = T2_RETURN_VISITOR;
-
         }
         else {
           this->t2_m_s = T2_CHECK_POSTMAN;

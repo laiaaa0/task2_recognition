@@ -28,8 +28,7 @@
 #include <iri_base_algorithm/iri_base_algorithm.h>
 #include "task2_recognition_client_alg.h"
 
-#include <erl_classification_modules/person_classification_module.h>
-#include <erl_classification_modules/person_comparison_module.h>
+#include <erl_classification_modules/face_recognition_module.h>
 #include <erl_classification_modules/shirt_detection_module.h>
 #include <tiago_modules/tts_module.h>
 #include <nen_modules/echo_module.h>
@@ -86,8 +85,8 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
   //Modules
 
 
-    //Person classifier module
-    CPersonClassificationModule classifier_module;
+    //Face recognition module
+    CFaceRecognitionModule face_recognition;
     //Shirt color detection module
     CShirtDetectionModule shirt_detection;
     //Text to speech module
