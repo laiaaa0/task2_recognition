@@ -29,6 +29,7 @@
 #include "task2_recognition_client_alg.h"
 
 #include <erl_classification_modules/person_classification_module.h>
+//#include <erl_classification_modules/shirt_detection_module.h>
 #include <tiago_modules/tts_module.h>
 #include <nen_modules/echo_module.h>
 #include <nen_common_msgs/EchoCmdAction.h>
@@ -42,11 +43,11 @@
 
 typedef enum {
     T2_INIT,
-    T2_CHECK_KIMBLE, 
-    T2_CHECK_POSTMAN,  
-    T2_ASK_PERSON,  
-    T2_WAIT_ANSWER, 
-    T2_VERIFY_ANSWER, 
+    T2_CHECK_KIMBLE,
+    T2_CHECK_POSTMAN,
+    T2_ASK_PERSON,
+    T2_WAIT_ANSWER,
+    T2_VERIFY_ANSWER,
     T2_WAIT_VERIFY_ANSWER,
     T2_RETURN_VISITOR,
     } T2_RECOGNITION_STATES;
@@ -80,13 +81,13 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     * Is updated everytime function config_update() is called.
     */
     Config config_;
-  
+
   //Modules
- 
-   
+
+
     //Person classifier module
     CPersonClassificationModule classifier_module;
-    CShirtDetectionModule shirt_module;
+    //CShirtDetectionModule shirt_module;
     //Text to speech module
     CTTSModule tts;
 
@@ -95,12 +96,10 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     nen_common_msgs::EchoCmdResult speech_command_;
 
     //Auxiliary variables to start task or ring bell from the dynamic_reconfigure
-    bool hasCalled;
     bool start_recognition_;
-    
+    bool visitor_recognised_;
+
     //Variables for the delays
-    bool isWaiting;
-    time_t waitingTime;
     Person current_person_;
 
 
@@ -118,20 +117,21 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
 
 
 
-    int visitors_counter;
-    int visitors_num;
-    int classification_retries;
     int current_action_retries;
-    
+
     //State machines
-    T2_MAIN_STATES t2_m_s;
-    task2_act_states t2_a_s;
-    task2_kimble_states t2_kimble;
-    
+    T2_RECOGNITION_STATES t2_m_s;
+
+
     //Auxiliary structures to decide better
-    std::vector<bool>seen_people;
-    Person most_probable_person;
-    float highest_accuracy;
+
+
+    bool ActionSaySentence(const std::string & sentence);
+
+    bool labelToPerson (const std::string & label);
+    std::string currentPersonStr ();
+
+
   public:
    /**
     * \brief Constructor
@@ -149,18 +149,15 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     */
     ~Task2RecognitionAlgNode(void);
 
-    bool ActionSaySentence(const std::string & sentence);
 
 
-    bool wait_result();
-    bool labelToPerson (const std::string & label);
-    std::string currentPersonStr ();
-
-    bool StartRecognition();
+    void StartRecognition();
 
     Person GetCurrentPerson();
 
-    
+    bool IsVisitorRecognised();
+
+
 
   protected:
    /**

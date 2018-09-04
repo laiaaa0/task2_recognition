@@ -52,7 +52,7 @@ class Task2RecognitionAlgorithm
     * Define a Config type with the ErlTask2Config. All driver implementations
     * will then use the same variable type Config.
     */
-    typedef task2_client::ErlTask2RecognitionConfig Config;
+    typedef task2_recognition_client::ErlTask2RecognitionConfig Config;
 
    /**
     * \brief config variable

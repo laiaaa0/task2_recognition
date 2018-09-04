@@ -7,7 +7,7 @@ find_package(catkin REQUIRED)
 #                 Add catkin additional components here
 # ********************************************************************
 find_package(catkin REQUIRED COMPONENTS iri_base_algorithm
-erl_classification_modules erl_person_classifier tiago_modules )
+erl_classification_modules  tiago_modules nen_modules)
 
 find_package(iriutils REQUIRED)
 
@@ -68,8 +68,8 @@ catkin_package(
  CATKIN_DEPENDS
  iri_base_algorithm
  erl_classification_modules
- erl_person_classifier
- 
+ nen_modules
+ tiago_modules
 # ********************************************************************
 #      Add system and labrobotica run time dependencies here
 # ********************************************************************
@@ -85,7 +85,7 @@ catkin_package(
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${iriutils_INCLUDE_DIR})
-#include_directories(${erl_classification_module_INCLUDE_DIRS})
+include_directories(${erl_classification_module_INCLUDE_DIRS})
 # include_directories(${<dependency>_INCLUDE_DIR})
 
 ## Declare a cpp library
@@ -100,7 +100,7 @@ add_executable(${PROJECT_NAME} src/task2_recognition_client_alg.cpp src/task2_re
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${iriutils_LIBRARY})
 
-#target_link_libraries(${PROJECT_NAME} ${erl_classification_module_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${erl_classification_module_LIBRARIES})
 
 # target_link_libraries(${PROJECT_NAME} ${<dependency>_LIBRARY})
 
