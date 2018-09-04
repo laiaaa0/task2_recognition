@@ -29,7 +29,8 @@
 #include "task2_recognition_client_alg.h"
 
 #include <erl_classification_modules/person_classification_module.h>
-//#include <erl_classification_modules/shirt_detection_module.h>
+#include <erl_classification_modules/person_comparison_module.h>
+#include <erl_classification_modules/shirt_detection_module.h>
 #include <tiago_modules/tts_module.h>
 #include <nen_modules/echo_module.h>
 #include <nen_common_msgs/EchoCmdAction.h>
@@ -43,7 +44,7 @@
 
 typedef enum {
     T2_INIT,
-    T2_CHECK_KIMBLE,
+    T2_CHECK_KNOWN_PERSON,
     T2_CHECK_POSTMAN,
     T2_ASK_PERSON,
     T2_WAIT_ANSWER,
@@ -87,10 +88,10 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
 
     //Person classifier module
     CPersonClassificationModule classifier_module;
-    //CShirtDetectionModule shirt_module;
+    //Shirt color detection module
+    CShirtDetectionModule shirt_detection;
     //Text to speech module
     CTTSModule tts;
-
     //Amazon echo modules
     CEchoModule speech;
     nen_common_msgs::EchoCmdResult speech_command_;
@@ -103,33 +104,21 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     Person current_person_;
 
 
-    //Parameters to be specified at init
-    std::string KIMBLE_STR;
-    std::string POSTMAN_STR;
-    int COLOR_YELLOW;
-    std::string RECOGNITION_SENTENCE;
-    std::string VERIFY_DELIMAN_SENTENCE;
-    std::string VERIFY_PLUMBER_SENTENCE;
-    int SENTENCE_PLUMBER_ID;
-    int SENTENCE_DELIMAN_ID;
-    int SPEECH_YES_ID;
-    int SPEECH_NO_ID;
-
-
-
     int current_action_retries;
 
     //State machines
     T2_RECOGNITION_STATES t2_m_s;
 
 
-    //Auxiliary structures to decide better
 
-
+    /*!
+       \brief Function that handles the tts module so that speaking is easier
+       \param String with the sentence to be said by the robot
+       \pre
+       \post
+       \return true if it ends saying the sentence, false otherwise.
+    */
     bool ActionSaySentence(const std::string & sentence);
-
-    bool labelToPerson (const std::string & label);
-    std::string currentPersonStr ();
 
 
   public:

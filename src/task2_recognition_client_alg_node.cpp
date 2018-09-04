@@ -4,65 +4,16 @@ Task2RecognitionAlgNode::Task2RecognitionAlgNode(void) :
 algorithm_base::IriBaseAlgorithm<Task2RecognitionAlgorithm>(),
 classifier_module("classifier",ros::this_node::getName()),
 tts("tts_module",ros::this_node::getName()),
-speech("echo_module",ros::this_node::getName())
-//shirt_module("shirt_color_module",ros::this_node::getName())
+speech("echo_module",ros::this_node::getName()),
+shirt_detection("shirt_color_detection_module",ros::this_node::getName())
 {
-  //init class attributes if necessary
-  //this->loop_rate_ = 2;//in [Hz]
-
   this->t2_m_s =  T2_INIT;
   this->current_person_ = Undefined;
-
-
-
-  this->KIMBLE_STR = "kimble";
-  // [init publishers]
-
-  // [init subscribers]
-
-  // [init services]
-
-  // [init clients]
-
-  // [init action servers]
-
-  // [init action clients]
 }
 
 Task2RecognitionAlgNode::~Task2RecognitionAlgNode(void)
 {
   // [free dynamic memory]
-}
-
-bool Task2RecognitionAlgNode::labelToPerson (const std::string & label){
-  if (label==this->config_.person_unknown){
-    this->current_person_ = Undefined;
-    return true;
-  } else if (label == this->config_.person_kimble){
-    this->current_person_ = Kimble;
-    return true;
-  } else if (label == this->config_.person_deliman){
-    this->current_person_ = Deliman;
-    return true;
-  } else if (label == this->config_.person_postman) {
-    this->current_person_ = Postman;
-    return true;
-  }
-  return false;
-}
-
-
-std::string Task2RecognitionAlgNode::currentPersonStr (){
-  if (this->current_person_==Undefined){
-    return this->config_.person_unknown;
-  } else if (this->current_person_ == Kimble){
-    return this->config_.person_kimble;
-  }else if (this->current_person_ == Deliman){
-    return this->config_.person_deliman;
-  }else if (this->current_person_ == Postman){
-    return this->config_.person_postman;
-  }
-  return "";
 }
 
 bool Task2RecognitionAlgNode::ActionSaySentence(const std::string & sentence){
@@ -110,34 +61,34 @@ Person Task2RecognitionAlgNode::GetCurrentPerson(){
 
 void Task2RecognitionAlgNode::mainNodeThread(void)
 {
-  // [fill msg structures]
-
   std::string label;
   float acc;
   std::string error_msg;
   bool result;
-  int color = COLOR_YELLOW;
+  int color;
 
   switch (this->t2_m_s){
     case T2_INIT:
       ROS_INFO("[TASK2] Wait start");
       if(this->start_recognition_){
         this->start_recognition_ = false;
-        this->t2_m_s=T2_CHECK_KIMBLE;
+        this->t2_m_s = T2_CHECK_KNOWN_PERSON;
         this->visitor_recognised_ = false;
       }
       else
       this->t2_m_s=T2_INIT;
       break;
-    case T2_CHECK_KIMBLE:
+
+
+    case T2_CHECK_KNOWN_PERSON:
 
       result = this->classifier_module.classify_current_person(label,acc,error_msg);
-      if (result && label==KIMBLE_STR){
+      if (result && label == this->config_.person_kimble){
         this->current_person_ = Kimble;
         this->t2_m_s = T2_RETURN_VISITOR;
       }
       else {
-        if (result && label == POSTMAN_STR){
+        if (result && label == this->config_.person_postman){
           this->current_person_ = Postman;
           this->t2_m_s = T2_RETURN_VISITOR;
 
@@ -151,10 +102,9 @@ void Task2RecognitionAlgNode::mainNodeThread(void)
 
 
     case T2_CHECK_POSTMAN:
-      //color = this->shirt_module.GetShirtColor();
-      //TODO : check this
+      color = this->shirt_detection.GetShirtColor();
 
-      if (color == COLOR_YELLOW){
+      if (color == config_.color_yellow_id){
         this->current_person_ = Postman;
         this->t2_m_s = T2_RETURN_VISITOR;
       }
@@ -164,7 +114,7 @@ void Task2RecognitionAlgNode::mainNodeThread(void)
       break;
 
     case T2_ASK_PERSON:
-      if (this->ActionSaySentence(this->RECOGNITION_SENTENCE)){
+      if (this->ActionSaySentence(this->config_.sentence_ask_person)){
         this->t2_m_s = T2_WAIT_ANSWER;
         this->speech.listen();
       }
@@ -176,11 +126,11 @@ void Task2RecognitionAlgNode::mainNodeThread(void)
       if (this->speech.is_finished()){
         if (this->speech.get_status()==ECHO_MODULE_SUCCESS){
           this->speech_command_ = this->speech.get_result();
-          if (this->speech_command_.cmd.cmd_id == this->SENTENCE_PLUMBER_ID){
+          if (this->speech_command_.cmd.cmd_id == this->config_.speech_plumber_id){
             this->current_person_ = Plumber;
             this->t2_m_s = T2_VERIFY_ANSWER;
           }
-          else if (this->speech_command_.cmd.cmd_id == this->SENTENCE_DELIMAN_ID){
+          else if (this->speech_command_.cmd.cmd_id == this->config_.speech_deliman_id){
             this->current_person_ = Deliman;
             this->t2_m_s = T2_VERIFY_ANSWER;
           }
@@ -201,14 +151,14 @@ void Task2RecognitionAlgNode::mainNodeThread(void)
       break;
     case T2_VERIFY_ANSWER:
       if (this->current_person_ == Deliman){
-        if (this->ActionSaySentence(this->VERIFY_DELIMAN_SENTENCE)){
+        if (this->ActionSaySentence(this->config_.sentence_verify_deliman)){
           this->t2_m_s = T2_WAIT_VERIFY_ANSWER;
           this->speech.listen();
         }
       }
       else {
         if (this->current_person_ == Plumber){
-          if (this->ActionSaySentence(this->VERIFY_PLUMBER_SENTENCE)){
+          if (this->ActionSaySentence(this->config_.sentence_verify_plumber)){
             this->t2_m_s = T2_WAIT_VERIFY_ANSWER;
             this->speech.listen();
           }
@@ -223,11 +173,11 @@ void Task2RecognitionAlgNode::mainNodeThread(void)
         if (this->speech.is_finished()){
           if (this->speech.get_status()==ECHO_MODULE_SUCCESS){
             this->speech_command_ = this->speech.get_result();
-            if (this->speech_command_.cmd.cmd_id == this->SPEECH_YES_ID){
+            if (this->speech_command_.cmd.cmd_id == this->config_.speech_yes_id){
 
               this->t2_m_s = T2_RETURN_VISITOR;
             }
-            else if (this->speech_command_.cmd.cmd_id == this->SPEECH_NO_ID){
+            else if (this->speech_command_.cmd.cmd_id == this->config_.speech_no_id){
 
               if (current_person_ == Deliman) current_person_ = Plumber;
               else if (current_person_ == Plumber) current_person_ = Deliman;
@@ -275,27 +225,10 @@ void Task2RecognitionAlgNode::mainNodeThread(void)
 void Task2RecognitionAlgNode::node_config_update(Config &config, uint32_t level)
 {
   this->alg_.lock();
-  /*
-  this->visitors_num = config.visitors_num;
-  if (config.start_task){
-  this->startTask = config.start_task;
-  this->t2_m_s = T2_INIT;
-}
 
-if (config.ring_bell) config.ring_bell = false;
-if (config.start_actions_for_person){
-if (this->labelToPerson(config.person)){
-this->t2_m_s =  T2_ACT;
-this->t2_a_s = act_greet;
-}
-else {
-ROS_INFO ("[TASK2] Person not valid!");
-}
-config.start_actions_for_person = false;
-}
-this->config_=config;
-*/
-this->alg_.unlock();
+  this->config_=config;
+
+  this->alg_.unlock();
 }
 
 void Task2RecognitionAlgNode::addNodeDiagnostics(void)
