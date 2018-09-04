@@ -103,7 +103,7 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     Person current_person_;
 
 
-    int current_action_retries;
+    int current_action_retries_;
 
     //State machines
     T2_RECOGNITION_STATES t2_m_s;
@@ -145,6 +145,7 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
 
     bool IsVisitorRecognised();
 
+    bool StorePostmanAndKimble(const std::string & postman_path,const std::string & kimble_path);
 
 
   protected:

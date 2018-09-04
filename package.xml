@@ -44,11 +44,13 @@
   <build_depend>erl_classification_modules</build_depend>
   <build_depend>tiago_modules</build_depend>
   <build_depend>nen_modules</build_depend>
+  <build_depend>shirt_color_detection</build_depend>
 
   <run_depend>iri_base_algorithm</run_depend>
   <run_depend>erl_classification_modules</run_depend>
   <run_depend>tiago_modules</run_depend>
   <run_depend>nen_modules</run_depend>
+  <run_depend>shirt_color_detection</run_depend>
 
 
 

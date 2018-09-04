@@ -7,7 +7,7 @@ find_package(catkin REQUIRED)
 #                 Add catkin additional components here
 # ********************************************************************
 find_package(catkin REQUIRED COMPONENTS iri_base_algorithm
-erl_classification_modules  tiago_modules nen_modules)
+erl_classification_modules  tiago_modules nen_modules shirt_color_detection)
 
 find_package(iriutils REQUIRED)
 
@@ -70,6 +70,7 @@ catkin_package(
  erl_classification_modules
  nen_modules
  tiago_modules
+ shirt_color_detection
 # ********************************************************************
 #      Add system and labrobotica run time dependencies here
 # ********************************************************************
