@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(task2_recognition_client)
+project(task2_recognition)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED)
 # ********************************************************************
 #                 Add catkin additional components here
 # ********************************************************************
-find_package(catkin REQUIRED COMPONENTS iri_base_algorithm
+find_package(catkin REQUIRED COMPONENTS iri_ros_tools
 erl_classification_modules  tiago_modules nen_modules shirt_color_detection)
 
 find_package(iriutils REQUIRED)
@@ -54,19 +53,21 @@ find_package(iriutils REQUIRED)
 # ********************************************************************
 #                 Add the dynamic reconfigure file
 # ********************************************************************
-generate_dynamic_reconfigure_options(cfg/ErlTask2Recognition.cfg)
+generate_dynamic_reconfigure_options(
+    cfg/Task2Recognition.cfg
+)
 
 # ********************************************************************
 #                 Add run time dependencies here
 # ********************************************************************
 catkin_package(
-#  INCLUDE_DIRS
-#  LIBRARIES
+  INCLUDE_DIRS include
+  LIBRARIES task2_recognition
 # ********************************************************************
 #            Add ROS and IRI ROS run time dependencies
 # ********************************************************************
  CATKIN_DEPENDS
- iri_base_algorithm
+ iri_ros_tools
  erl_classification_modules
  nen_modules
  tiago_modules
@@ -86,14 +87,12 @@ catkin_package(
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${iriutils_INCLUDE_DIR})
-include_directories(${erl_classification_module_INCLUDE_DIRS})
 # include_directories(${<dependency>_INCLUDE_DIR})
 
 ## Declare a cpp library
-# add_library(${PROJECT_NAME} <list of source files>)
+ add_library(${PROJECT_NAME} src/task2_recognition.cpp)
 
 ## Declare a cpp executable
-add_executable(${PROJECT_NAME} src/task2_recognition_client_alg.cpp src/task2_recognition_client_alg_node.cpp)
 
 # ********************************************************************
 #                   Add the libraries
@@ -101,7 +100,6 @@ add_executable(${PROJECT_NAME} src/task2_recognition_client_alg.cpp src/task2_re
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${iriutils_LIBRARY})
 
-target_link_libraries(${PROJECT_NAME} ${erl_classification_module_LIBRARIES})
 
 # target_link_libraries(${PROJECT_NAME} ${<dependency>_LIBRARY})
 
