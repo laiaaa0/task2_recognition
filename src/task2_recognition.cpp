@@ -6,7 +6,7 @@ tts("tts_module",ros::this_node::getName()),
 speech("echo_module",ros::this_node::getName()),
 shirt_detection("shirt_color_detection_module",ros::this_node::getName())
 {
-  this->state =  T2_INIT;
+  this->state =  T2_INIT_RECOGNITION;
   this->current_person_ = Undefined;
   this->current_action_retries_ = 0;
   this->start_recognition_ = false;
@@ -75,13 +75,13 @@ void CTask2Recognition::state_machine(void)
   std::string label;
   int color;
   if (this->cancel_pending_){
-      this->state = T2_END;
+      this->state = T2_END_RECOGNITION;
       this->cancel_pending_ = false;
   }
   //ROS_INFO("CTask2Recognition: State %d", this->state);
 
   switch (this->state){
-    case T2_INIT:
+    case T2_INIT_RECOGNITION:
       if(this->start_recognition_){
         ROS_INFO("[TASK2Recognition]  Starting");
         this->start_recognition_ = false;
@@ -89,7 +89,7 @@ void CTask2Recognition::state_machine(void)
         this->visitor_recognised_ = false;
       }
       else
-        this->state=T2_INIT;
+        this->state=T2_INIT_RECOGNITION;
       break;
 
 
@@ -215,10 +215,10 @@ void CTask2Recognition::state_machine(void)
     case T2_RETURN_VISITOR:
     {
       this->visitor_recognised_ = true;
-      this->state = T2_END;
+      this->state = T2_END_RECOGNITION;
       break;
     }
-    case T2_END:
+    case T2_END_RECOGNITION:
 
         break;
 

@@ -42,6 +42,7 @@
 
 
 #include <task2_recognition/Task2RecognitionConfig.h>
+#include "person_definition.h"
 
 
 // [publisher subscriber headers]
@@ -52,7 +53,7 @@
 
 
 typedef enum {
-    T2_INIT,
+    T2_INIT_RECOGNITION,
     T2_CHECK_KNOWN_PERSON,
     T2_CHECK_POSTMAN,
     T2_ASK_PERSON,
@@ -60,11 +61,9 @@ typedef enum {
     T2_VERIFY_ANSWER,
     T2_WAIT_VERIFY_ANSWER,
     T2_RETURN_VISITOR,
-    T2_END
+    T2_END_RECOGNITION
 } task2_recognition_states;
 
-
-typedef enum {Deliman, Postman, Kimble, Plumber, Undefined} Person;
 
 /**
  * \brief IRI ROS Specific Algorithm Class
