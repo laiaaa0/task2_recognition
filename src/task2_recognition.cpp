@@ -78,7 +78,7 @@ void CTask2Recognition::state_machine(void)
       this->state = T2_END_RECOGNITION;
       this->cancel_pending_ = false;
   }
-  //ROS_INFO("CTask2Recognition: State %d", this->state);
+  ROS_INFO("CTask2Recognition: State %d", this->state);
 
   switch (this->state){
     case T2_INIT_RECOGNITION:
