@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>task2_recognition_client</name>
+  <name>task2_recognition</name>
   <version>0.0.0</version>
-  <description>The task2_recognition_client package</description>
+  <description>The task2_recognition package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -40,13 +40,13 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>iri_base_algorithm</build_depend>
+  <build_depend>iri_ros_tools</build_depend>
   <build_depend>erl_classification_modules</build_depend>
   <build_depend>tiago_modules</build_depend>
   <build_depend>nen_modules</build_depend>
   <build_depend>shirt_color_detection</build_depend>
 
-  <run_depend>iri_base_algorithm</run_depend>
+  <run_depend>iri_ros_tools</run_depend>
   <run_depend>erl_classification_modules</run_depend>
   <run_depend>tiago_modules</run_depend>
   <run_depend>nen_modules</run_depend>

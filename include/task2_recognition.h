@@ -22,18 +22,29 @@
 // refer to the IRI wiki page for more information:
 // http://wikiri.upc.es/index.php/Robotics_Lab
 
-#ifndef _task2_recognition_alg_node_h_
-#define _task2_recognition_alg_node_h_
+#ifndef _task2_recognition_module_h_
+#define _task2_recognition_module_h_
 
-#include <iri_base_algorithm/iri_base_algorithm.h>
-#include "task2_recognition_client_alg.h"
+
+//IRI ROS headers
+#include <iri_ros_tools/module.h>
+#include <iri_ros_tools/module_action.h>
+#include <iri_ros_tools/module_service.h>
+#include <iri_ros_tools/module_dyn_reconf.h>
+#include <iri_ros_tools/watchdog.h>
+#include <iri_ros_tools/timeout.h>
 
 #include <erl_classification_modules/face_recognition_module.h>
 #include <erl_classification_modules/shirt_detection_module.h>
 #include <tiago_modules/tts_module.h>
 #include <nen_modules/echo_module.h>
 #include <nen_common_msgs/EchoCmdAction.h>
-#include <time.h>
+
+
+#include <task2_recognition/Task2RecognitionConfig.h>
+#include "person_definition.h"
+
+
 // [publisher subscriber headers]
 
 // [service client headers]
@@ -42,7 +53,7 @@
 
 
 typedef enum {
-    T2_INIT,
+    T2_INIT_RECOGNITION,
     T2_CHECK_KNOWN_PERSON,
     T2_CHECK_POSTMAN,
     T2_ASK_PERSON,
@@ -50,16 +61,15 @@ typedef enum {
     T2_VERIFY_ANSWER,
     T2_WAIT_VERIFY_ANSWER,
     T2_RETURN_VISITOR,
-    } T2_RECOGNITION_STATES;
+    T2_END_RECOGNITION
+} task2_recognition_states;
 
-
-typedef enum {Deliman, Postman, Kimble, Plumber, Undefined} Person;
 
 /**
  * \brief IRI ROS Specific Algorithm Class
  *
  */
-class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2RecognitionAlgorithm>
+class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConfig>
 {
   private:
     // [publisher attributes]
@@ -80,7 +90,7 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     * This variable has all the driver parameters defined in the cfg config file.
     * Is updated everytime function config_update() is called.
     */
-    Config config_;
+    task2_recognition::Task2RecognitionConfig config_;
 
   //Modules
 
@@ -98,7 +108,7 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     //Auxiliary variables to start task or ring bell from the dynamic_reconfigure
     bool start_recognition_;
     bool visitor_recognised_;
-
+    bool cancel_pending_;
     //Variables for the delays
     Person current_person_;
 
@@ -106,7 +116,7 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     int current_action_retries_;
 
     //State machines
-    T2_RECOGNITION_STATES t2_m_s;
+    task2_recognition_states state;
 
 
 
@@ -119,75 +129,69 @@ class Task2RecognitionAlgNode : public algorithm_base::IriBaseAlgorithm<Task2Rec
     */
     bool ActionSaySentence(const std::string & sentence);
 
-
-  public:
-   /**
-    * \brief Constructor
-    *
-    * This constructor initializes specific class attributes and all ROS
-    * communications variables to enable message exchange.
-    */
-    Task2RecognitionAlgNode(void);
-
-   /**
-    * \brief Destructor
-    *
-    * This destructor frees all necessary dynamic memory allocated within this
-    * this class.
-    */
-    ~Task2RecognitionAlgNode(void);
-
-
-
-    void StartRecognition();
-
-    Person GetCurrentPerson();
-
-    bool IsVisitorRecognised();
-
-    bool StorePostmanAndKimble(const std::string & postman_path,const std::string & kimble_path);
-
-
   protected:
-   /**
-    * \brief main node thread
-    *
-    * This is the main thread node function. Code written here will be executed
-    * in every node loop while the algorithm is on running state. Loop frequency
-    * can be tuned by modifying loop_rate attribute.
-    *
-    * Here data related to the process loop or to ROS topics (mainly data structs
-    * related to the MSG and SRV files) must be updated. ROS publisher objects
-    * must publish their data in this process. ROS client servers may also
-    * request data to the corresponding server topics.
-    */
-    void mainNodeThread(void);
+    void state_machine(void);
 
-   /**
-    * \brief dynamic reconfigure server callback
-    *
-    * This method is called whenever a new configuration is received through
-    * the dynamic reconfigure. The derivated generic algorithm class must
-    * implement it.
-    *
-    * \param config an object with new configuration from all algorithm
-    *               parameters defined in the config file.
-    * \param level  integer referring the level in which the configuration
-    *               has been changed.
-    */
-    void node_config_update(Config &config, uint32_t level);
+    void reconfigure_callback(task2_recognition::Task2RecognitionConfig &config, uint32_t level);
 
-   /**
-    * \brief node add diagnostics
-    *
-    * In this abstract function additional ROS diagnostics applied to the
-    * specific algorithms may be added.
-    */
-    void addNodeDiagnostics(void);
+   public:
+     /**
+      * \brief Constructor
+      *
+      * This constructor initializes specific class attributes and all ROS
+      * communications variables to enable message exchange.
+      */
+      CTask2Recognition(const std::string &name, const std::string &name_space=std::string(""));
 
-    // [diagnostic functions]
 
-    // [test functions]
+
+
+      void StartRecognition();
+
+      Person GetCurrentPerson();
+
+      bool IsVisitorRecognised();
+
+      bool StorePostmanAndKimble(const std::string & postman_path,const std::string & kimble_path);
+
+      /**
+       * \brief Stops the current execution of the module
+       *
+       * This function stops the execution of the state machine, stopping all sub-processes in execution.
+       *
+       */
+      void stop(void);
+
+      /**
+      * \brief Indicates if there is any execution in process
+      *
+      * This function checks if the state machine is in execution, what it means it is searching
+      * and bringing a object.
+      *
+      * \param return a bollean indicating wether the last goal has been ended or not.
+      */
+      bool is_finished(void);
+
+      /**
+        * \brief Indicates the current status of the module
+        *
+        * This function returns the current status of the execution, which is a defined value
+        * from task3_subtasks_status_t. It is useful to check if the goal has been completed
+        * successfully or not when the execution of the module has just finished.
+        *
+        * \return the current status of the module.
+        *
+        */
+       task2_recognition_states get_state(void);
+
+      /**
+      * \brief Destructor
+      *
+      * This destructor frees all necessary dynamic memory allocated within this
+      * this class.
+      */
+      ~CTask2Recognition(void);
+
 };
 
 #endif

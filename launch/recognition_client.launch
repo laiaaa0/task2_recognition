@@ -6,11 +6,6 @@
   <arg name="postman_path" default="/home/pal/iri-lab/labrobotica/algorithms/erl_person_classifier/person_faces/postman/postman.jpg" />
   <include file="$(find usb_cam)/launch/usb_cam-test.launch"/>
 
-  <!--LAUNCH IMAGE VIEW-->
- <!-- <node pkg="image_view" type="image_view" name="image_view">
-    <remap from="image" to="/usb_cam/image_raw" />
-  </node>-->
-
 
   <node pkg="task2_recognition_client"
  	type="task2_recognition_client"
