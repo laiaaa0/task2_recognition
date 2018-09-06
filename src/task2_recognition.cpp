@@ -12,6 +12,7 @@ shirt_detection("shirt_color_detection_module",this->module_nh.getNamespace())
   this->current_action_retries_ = 0;
   this->start_recognition_ = false;
   this->cancel_pending_ = false;
+  this->people_stored_success_ = false;
 
   //TODO : When initializing we need to call StorePostmanAndKimble from main node
 
@@ -27,7 +28,8 @@ bool CTask2Recognition::StorePostmanAndKimble(const std::string & postman_path,c
     std::cout << "Storing : "<<postman_path<<" "<<kimble_path << '\n';
     bool success_store_postman = this->face_recognition.StorePersonFromPath(postman_path, this->config_.person_postman);
     bool success_store_kimble = this->face_recognition.StorePersonFromPath(kimble_path, this->config_.person_kimble);
-    return success_store_postman && success_store_kimble;
+    this->people_stored_success_ = success_store_postman && success_store_kimble;
+    return this->people_stored_success_;
 }
 bool CTask2Recognition::ActionSaySentence(const std::string & sentence){
   static bool is_sentence_sent = false;
@@ -256,4 +258,11 @@ bool CTask2Recognition::is_finished(void){
 
 task2_recognition_states CTask2Recognition::get_state(void){
     return this->state;
+}
+
+bool CTask2Recognition::AreFacesStored(){
+	return this->people_stored_success_;
+}
+bool CTask2Recognition::IsReady(){
+ 	return this->face_recognition.RecognitionServerExists();
 }

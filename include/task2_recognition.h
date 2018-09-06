@@ -109,6 +109,7 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
     bool start_recognition_;
     bool visitor_recognised_;
     bool cancel_pending_;
+    bool people_stored_success_;
     //Variables for the delays
     Person current_person_;
 
@@ -145,12 +146,15 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
 
 
 
+      bool AreFacesStored();
 
       void StartRecognition();
 
       Person GetCurrentPerson();
 
       bool IsVisitorRecognised();
+    
+      bool IsReady();
 
       bool StorePostmanAndKimble(const std::string & postman_path,const std::string & kimble_path);
 
