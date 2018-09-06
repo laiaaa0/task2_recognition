@@ -1,15 +1,17 @@
 #include "task2_recognition.h"
 
 CTask2Recognition::CTask2Recognition(const std::string &name, const std::string &name_space) : CModule(name,name_space),
-face_recognition("face_recognition",ros::this_node::getName()),
-tts("tts_module",ros::this_node::getName()),
-speech("echo_module",ros::this_node::getName()),
-shirt_detection("shirt_color_detection_module",ros::this_node::getName())
+face_recognition("face_recognition", this->module_nh.getNamespace()),
+tts("tts_module",this->module_nh.getNamespace()),
+speech("echo_module",this->module_nh.getNamespace()),
+shirt_detection("shirt_color_detection_module",this->module_nh.getNamespace())
 {
+  this->start_operation();
   this->state =  T2_INIT_RECOGNITION;
   this->current_person_ = Undefined;
   this->current_action_retries_ = 0;
   this->start_recognition_ = false;
+  this->cancel_pending_ = false;
 
   //TODO : When initializing we need to call StorePostmanAndKimble from main node
 
@@ -78,7 +80,6 @@ void CTask2Recognition::state_machine(void)
       this->state = T2_END_RECOGNITION;
       this->cancel_pending_ = false;
   }
-  ROS_INFO("CTask2Recognition: State %d", this->state);
 
   switch (this->state){
     case T2_INIT_RECOGNITION:
@@ -95,7 +96,7 @@ void CTask2Recognition::state_machine(void)
 
     case T2_CHECK_KNOWN_PERSON:
       label = this->face_recognition.GetCurrentPerson();
-      ROS_INFO("[TASK2Recognition] get person");
+      ROS_INFO("[TASK2Recognition] Check for known person");
       std::cout << label << '\n';
       if (label == this->config_.person_kimble){
         this->current_person_ = Kimble;
@@ -115,6 +116,7 @@ void CTask2Recognition::state_machine(void)
 
 
     case T2_CHECK_POSTMAN:
+      ROS_INFO("[TASK2Recognition] Check for shirt color");
       color = this->shirt_detection.GetShirtColor();
 
       if (color == config_.color_yellow_id){
@@ -127,6 +129,7 @@ void CTask2Recognition::state_machine(void)
       break;
 
     case T2_ASK_PERSON:
+      ROS_INFO ("[TASK2Recognition] Asking who the person is");
       if (this->ActionSaySentence(this->config_.sentence_ask_person)){
         this->state = T2_WAIT_ANSWER;
         this->speech.listen();
@@ -136,6 +139,7 @@ void CTask2Recognition::state_machine(void)
 
     case T2_WAIT_ANSWER:
       //TODO : AMAZON ALEXA
+      ROS_INFO("[Task2Recognition] Waiting answer from amazon alexa");
       if (this->speech.is_finished()){
         if (this->speech.get_status()==ECHO_MODULE_SUCCESS){
           this->speech_command_ = this->speech.get_result();
@@ -219,6 +223,8 @@ void CTask2Recognition::state_machine(void)
       break;
     }
     case T2_END_RECOGNITION:
+	ROS_INFO("Visitor recognised: ");
+	std::cout<<this->current_person_<<std::endl;
 
         break;
 
@@ -230,6 +236,11 @@ void CTask2Recognition::reconfigure_callback(task2_recognition::Task2Recognition
   ROS_INFO("CTask2Recognition: reconfigure callback");
   this->lock();
   this->config_=config;
+
+  if (this->config_.store_postman_kimble){
+      this->config_.store_postman_kimble = false;
+      this->StorePostmanAndKimble(this->config_.postman_image_path,this->config_.kimble_image_path);
+  }
   /* set the module rate */
 //  this->set_rate(config.rate_hz);
   this->unlock();
