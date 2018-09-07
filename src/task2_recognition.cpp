@@ -240,12 +240,24 @@ void CTask2Recognition::reconfigure_callback(task2_recognition::Task2Recognition
 {
   ROS_INFO("CTask2Recognition: reconfigure callback");
   this->lock();
+
+  if (config.start_recognition){
+      if (this->AreFacesStored()){
+          this->StartRecognition();
+      }
+      else {
+          ROS_ERROR("Can't start recognition if faces are not stored!!");
+      }
+      config.start_recognition = false;
+  }
+
   this->config_=config;
 
   if (this->config_.store_postman_kimble){
       this->config_.store_postman_kimble = false;
       this->StorePostmanAndKimble(this->config_.postman_image_path,this->config_.kimble_image_path);
   }
+
   /* set the module rate */
 //  this->set_rate(config.rate_hz);
   this->unlock();
