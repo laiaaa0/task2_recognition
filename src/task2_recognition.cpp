@@ -145,22 +145,25 @@ void CTask2Recognition::state_machine(void)
       if (this->speech.is_finished()){
         if (this->speech.get_status()==ECHO_MODULE_SUCCESS){
           this->speech_command_ = this->speech.get_result();
-          if (this->speech_command_.cmd.cmd_id == this->config_.speech_plumber_id){
-            this->current_person_ = Plumber;
-            this->state = T2_VERIFY_ANSWER;
-          }
-          else if (this->speech_command_.cmd.cmd_id == this->config_.speech_deliman_id){
-            this->current_person_ = Deliman;
-            this->state = T2_VERIFY_ANSWER;
+          if (this->speech_command_.cmd.cmd_id == this->config_.speech_identification){
+              if (this->speech_command_.cmd.text_seq[0] == this->config_.person_plumber){
+                    this->current_person_ = Plumber;
+                    this->state = T2_VERIFY_ANSWER;
+              }
+              else if (this->speech_command_.cmd.text_seq[0] == this->config_.person_deliman){
+                  this->current_person_ = Deliman;
+                  this->state = T2_VERIFY_ANSWER;
+              }
+              else {
+                  this->state = T2_ASK_PERSON;
+              }
           }
           else {
             this->state = T2_ASK_PERSON;
-
           }
         }
         else {
           this->state = T2_ASK_PERSON;
-
         }
       }
       else {
