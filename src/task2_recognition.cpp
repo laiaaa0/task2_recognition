@@ -7,12 +7,15 @@ speech("echo_module",this->module_nh.getNamespace()),
 shirt_detection("shirt_color_detection_module",this->module_nh.getNamespace())
 {
   this->start_operation();
-  this->state =  T2_INIT_RECOGNITION;
+  this->state =  T2_IDLE;
+  this->status = T2_RECOGNITION_SUCCESS;
   this->current_person_ = Undefined;
   this->current_action_retries_ = 0;
   this->start_recognition_ = false;
   this->cancel_pending_ = false;
   this->people_stored_success_ = false;
+  this->current_ask_retries_ = 0;
+
 
   //TODO : When initializing we need to call StorePostmanAndKimble from main node
 
@@ -63,7 +66,7 @@ void CTask2Recognition::StartRecognition(){
 }
 
 bool CTask2Recognition::IsVisitorRecognised(){
-  return this->visitor_recognised_;
+  return (this->visitor_recognised_ || this->status == T2_RECOGNITION_STOPPED);
 }
 
 
@@ -79,20 +82,23 @@ void CTask2Recognition::state_machine(void)
   std::string label;
   int color;
   if (this->cancel_pending_){
-      this->state = T2_END_RECOGNITION;
+      this->state = T2_IDLE;
+      this->status = T2_RECOGNITION_STOPPED;
+
       this->cancel_pending_ = false;
   }
 
   switch (this->state){
-    case T2_INIT_RECOGNITION:
+    case T2_IDLE:
       if(this->start_recognition_){
         ROS_INFO("[TASK2Recognition]  Starting");
         this->start_recognition_ = false;
         this->state = T2_CHECK_KNOWN_PERSON;
+        this->status = T2_RECOGNITION_RUNNING;
         this->visitor_recognised_ = false;
       }
       else
-        this->state=T2_INIT_RECOGNITION;
+        this->state=T2_IDLE;
       break;
 
 
@@ -127,12 +133,18 @@ void CTask2Recognition::state_machine(void)
       }
       else {
         this->state = T2_ASK_PERSON;
+
       }
       break;
 
     case T2_ASK_PERSON:
       ROS_INFO ("[TASK2Recognition] Asking who the person is");
+      if (this->current_ask_retries_ > this->config_.max_identification_retries){
+          this->state = T2_IDLE;
+          this->status = T2_RECOGNITION_FAIL;
+      }
       if (this->ActionSaySentence(this->config_.sentence_ask_person)){
+        this->current_ask_retries_ ++;
         this->state = T2_WAIT_ANSWER;
         this->speech.listen();
       }
@@ -155,6 +167,7 @@ void CTask2Recognition::state_machine(void)
                   this->state = T2_VERIFY_ANSWER;
               }
               else {
+
                   this->state = T2_ASK_PERSON;
               }
           }
@@ -225,6 +238,7 @@ void CTask2Recognition::state_machine(void)
     {
       this->visitor_recognised_ = true;
       this->state = T2_END_RECOGNITION;
+      this->status = T2_RECOGNITION_SUCCESS;
       break;
     }
     case T2_END_RECOGNITION:
@@ -275,6 +289,9 @@ task2_recognition_states CTask2Recognition::get_state(void){
     return this->state;
 }
 
+task2_recognition_status CTask2Recognition::get_status(void){
+    return this->status;
+}
 bool CTask2Recognition::AreFacesStored(){
 	return this->people_stored_success_;
 }

@@ -53,7 +53,7 @@
 
 
 typedef enum {
-    T2_INIT_RECOGNITION,
+    T2_IDLE,
     T2_CHECK_KNOWN_PERSON,
     T2_CHECK_POSTMAN,
     T2_ASK_PERSON,
@@ -64,7 +64,12 @@ typedef enum {
     T2_END_RECOGNITION
 } task2_recognition_states;
 
-
+typedef enum{
+    T2_RECOGNITION_RUNNING,
+    T2_RECOGNITION_SUCCESS,
+    T2_RECOGNITION_FAIL,
+    T2_RECOGNITION_STOPPED
+} task2_recognition_status;
 /**
  * \brief IRI ROS Specific Algorithm Class
  *
@@ -115,11 +120,11 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
 
 
     int current_action_retries_;
-
+    int current_ask_retries_;
     //State machines
     task2_recognition_states state;
 
-
+    task2_recognition_status status;
 
     /*!
        \brief Function that handles the tts module so that speaking is easier
@@ -153,7 +158,7 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
       Person GetCurrentPerson();
 
       bool IsVisitorRecognised();
-    
+
       bool IsReady();
 
       bool StorePostmanAndKimble(const std::string & postman_path,const std::string & kimble_path);
@@ -186,6 +191,8 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
         * \return the current status of the module.
         *
         */
+       task2_recognition_status get_status(void);
+
        task2_recognition_states get_state(void);
 
       /**
