@@ -39,6 +39,7 @@
 #include <tiago_modules/tts_module.h>
 #include <nen_modules/echo_module.h>
 #include <nen_common_msgs/EchoCmdAction.h>
+#include <log_modules/log_module.h>
 
 
 #include <task2_recognition/Task2RecognitionConfig.h>
@@ -108,6 +109,8 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
     CEchoModule speech;
     nen_common_msgs::EchoCmdResult speech_command_;
 
+    //Log module
+    CLogModule logging;
     //Auxiliary variables to start task or ring bell from the dynamic_reconfigure
     bool start_recognition_;
     bool visitor_recognised_;

@@ -6,7 +6,11 @@ project(task2_recognition)
 #                 Add catkin additional components here
 # ********************************************************************
 find_package(catkin REQUIRED COMPONENTS iri_ros_tools
-erl_classification_modules  tiago_modules nen_modules shirt_color_detection)
+log_modules
+erl_classification_modules
+tiago_modules
+nen_modules
+shirt_color_detection)
 
 find_package(iriutils REQUIRED)
 
@@ -68,6 +72,7 @@ catkin_package(
 # ********************************************************************
  CATKIN_DEPENDS
  iri_ros_tools
+ log_modules
  erl_classification_modules
  nen_modules
  tiago_modules

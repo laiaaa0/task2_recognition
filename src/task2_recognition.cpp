@@ -4,6 +4,7 @@ CTask2Recognition::CTask2Recognition(const std::string &name, const std::string 
 face_recognition("face_recognition", this->module_nh.getNamespace()),
 tts("tts_module",this->module_nh.getNamespace()),
 speech("echo_module",this->module_nh.getNamespace()),
+logging("log_module", this->module_nh.getNamespace()),
 shirt_detection("shirt_color_detection_module",this->module_nh.getNamespace())
 {
   this->start_operation();
@@ -38,6 +39,7 @@ bool CTask2Recognition::ActionSaySentence(const std::string & sentence){
   static bool is_sentence_sent = false;
   if (!is_sentence_sent){
     tts.say(sentence);
+    this->logging.start_logging_audio();
     is_sentence_sent = true;
   }
   else {
@@ -45,6 +47,7 @@ bool CTask2Recognition::ActionSaySentence(const std::string & sentence){
       if (tts.get_status()==TTS_MODULE_SUCCESS or this->current_action_retries_ >= this->config_.max_action_retries){
         is_sentence_sent  = false;
         this->current_action_retries_ = 0;
+        this->logging.stop_logging_audio();
         return true;
 
       }
@@ -146,6 +149,7 @@ void CTask2Recognition::state_machine(void)
       if (this->ActionSaySentence(this->config_.sentence_ask_person)){
         this->current_ask_retries_ ++;
         this->state = T2_WAIT_ANSWER;
+        this->logging.start_logging_audio();
         this->speech.listen();
       }
       break;
@@ -158,6 +162,8 @@ void CTask2Recognition::state_machine(void)
         if (this->speech.get_status()==ECHO_MODULE_SUCCESS){
           this->speech_command_ = this->speech.get_result();
           if (this->speech_command_.cmd.cmd_id == this->config_.speech_identification){
+              this->logging.stop_logging_audio();
+
               if (this->speech_command_.cmd.text_seq[0] == this->config_.person_plumber){
                     this->current_person_ = Plumber;
                     this->state = T2_RETURN_VISITOR;
