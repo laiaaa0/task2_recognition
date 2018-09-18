@@ -152,7 +152,7 @@ void CTask2Recognition::state_machine(void)
 
 
     case T2_WAIT_ANSWER:
-      //TODO : AMAZON ALEXA
+        // Amazon alexa is in charge of the verification of the answer.
       ROS_INFO("[Task2Recognition] Waiting answer from amazon alexa");
       if (this->speech.is_finished()){
         if (this->speech.get_status()==ECHO_MODULE_SUCCESS){
@@ -160,14 +160,13 @@ void CTask2Recognition::state_machine(void)
           if (this->speech_command_.cmd.cmd_id == this->config_.speech_identification){
               if (this->speech_command_.cmd.text_seq[0] == this->config_.person_plumber){
                     this->current_person_ = Plumber;
-                    this->state = T2_VERIFY_ANSWER;
+                    this->state = T2_RETURN_VISITOR;
               }
               else if (this->speech_command_.cmd.text_seq[0] == this->config_.person_deliman){
                   this->current_person_ = Deliman;
-                  this->state = T2_VERIFY_ANSWER;
+                  this->state = T2_RETURN_VISITOR;
               }
               else {
-
                   this->state = T2_ASK_PERSON;
               }
           }
@@ -184,55 +183,6 @@ void CTask2Recognition::state_machine(void)
       }
 
       break;
-    case T2_VERIFY_ANSWER:
-      if (this->current_person_ == Deliman){
-        if (this->ActionSaySentence(this->config_.sentence_verify_deliman)){
-          this->state = T2_WAIT_VERIFY_ANSWER;
-          this->speech.listen();
-        }
-      }
-      else {
-        if (this->current_person_ == Plumber){
-          if (this->ActionSaySentence(this->config_.sentence_verify_plumber)){
-            this->state = T2_WAIT_VERIFY_ANSWER;
-            this->speech.listen();
-          }
-        }
-      }
-
-      break;
-
-    case T2_WAIT_VERIFY_ANSWER:
-    //TODO:AMAZON ALEXA
-      {
-        if (this->speech.is_finished()){
-          if (this->speech.get_status()==ECHO_MODULE_SUCCESS){
-            this->speech_command_ = this->speech.get_result();
-            if (this->speech_command_.cmd.cmd_id == this->config_.speech_yes_id){
-
-              this->state = T2_RETURN_VISITOR;
-            }
-            else if (this->speech_command_.cmd.cmd_id == this->config_.speech_no_id){
-
-              if (current_person_ == Deliman) current_person_ = Plumber;
-              else if (current_person_ == Plumber) current_person_ = Deliman;
-              this->state = T2_VERIFY_ANSWER;
-            }
-            else {
-              this->state = T2_ASK_PERSON;
-
-            }
-          }
-          else {
-            this->state = T2_ASK_PERSON;
-
-          }
-        }
-        else {
-          this->state = T2_WAIT_ANSWER;
-        }
-        break;
-      }
 
     case T2_RETURN_VISITOR:
     {
