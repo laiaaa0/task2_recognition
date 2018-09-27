@@ -69,7 +69,7 @@ void CTask2Recognition::StartRecognition(){
 }
 
 bool CTask2Recognition::IsVisitorRecognised(){
-  return (this->visitor_recognised_ || this->status == T2_RECOGNITION_STOPPED);
+  return this->visitor_recognised_ ;
 }
 
 
@@ -87,7 +87,6 @@ void CTask2Recognition::state_machine(void)
   if (this->cancel_pending_){
       this->state = T2_IDLE;
       this->status = T2_RECOGNITION_STOPPED;
-
       this->cancel_pending_ = false;
   }
 
@@ -100,15 +99,12 @@ void CTask2Recognition::state_machine(void)
         this->status = T2_RECOGNITION_RUNNING;
         this->visitor_recognised_ = false;
       }
-      else
-        this->state=T2_IDLE;
       break;
 
 
     case T2_CHECK_KNOWN_PERSON:
       label = this->face_recognition.GetCurrentPerson();
       ROS_INFO("[TASK2Recognition] Check for known person");
-      std::cout << label << '\n';
       if (label == this->config_.person_kimble){
         this->current_person_ = Kimble;
         this->state = T2_RETURN_VISITOR;
@@ -129,14 +125,12 @@ void CTask2Recognition::state_machine(void)
     case T2_CHECK_POSTMAN:
       ROS_INFO("[TASK2Recognition] Check for shirt color");
       color = this->shirt_detection.GetShirtColor();
-
       if (color == config_.color_yellow_id){
         this->current_person_ = Postman;
         this->state = T2_RETURN_VISITOR;
       }
       else {
         this->state = T2_ASK_PERSON;
-
       }
       break;
 
@@ -193,15 +187,10 @@ void CTask2Recognition::state_machine(void)
     case T2_RETURN_VISITOR:
     {
       this->visitor_recognised_ = true;
-      this->state = T2_END_RECOGNITION;
+      this->state = T2_IDLE;
       this->status = T2_RECOGNITION_SUCCESS;
       break;
     }
-    case T2_END_RECOGNITION:
-	ROS_INFO("Visitor recognised: ");
-	std::cout<<this->current_person_<<std::endl;
-
-        break;
 
   }
 }
@@ -238,7 +227,7 @@ void CTask2Recognition::stop(void){
 }
 
 bool CTask2Recognition::is_finished(void){
-    return IsVisitorRecognised();
+    return (IsVisitorRecognised() || this->status == T2_RECOGNITION_STOPPED);
 }
 
 task2_recognition_states CTask2Recognition::get_state(void){

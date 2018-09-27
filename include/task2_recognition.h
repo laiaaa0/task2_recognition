@@ -59,8 +59,7 @@ typedef enum {
     T2_CHECK_POSTMAN,
     T2_ASK_PERSON,
     T2_WAIT_ANSWER,
-    T2_RETURN_VISITOR,
-    T2_END_RECOGNITION
+    T2_RETURN_VISITOR
 } task2_recognition_states;
 
 typedef enum{
