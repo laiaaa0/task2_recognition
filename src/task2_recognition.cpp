@@ -125,7 +125,7 @@ void CTask2Recognition::state_machine(void)
     case T2_CHECK_POSTMAN:
       ROS_INFO("[TASK2Recognition] Check for shirt color");
       color = this->shirt_detection.GetShirtColor();
-      if (color == config_.color_yellow_id){
+      if (color == config_.color_yellow_id || color == config_.color_orange_id){
         this->current_person_ = Postman;
         this->state = T2_RETURN_VISITOR;
       }
@@ -167,7 +167,10 @@ void CTask2Recognition::state_machine(void)
                   this->state = T2_RETURN_VISITOR;
               }
               else {
-                  this->state = T2_ASK_PERSON;
+                  //TODO : Risk it and decide that if the command isn't recognised, it will be the Deliman.
+                  this->current_person_ = Deliman;
+                  this->state = T2_RETURN_VISITOR;
+
               }
           }
           else {
