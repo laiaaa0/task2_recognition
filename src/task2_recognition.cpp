@@ -16,6 +16,7 @@ shirt_detection("shirt_color_detection_module",this->module_nh.getNamespace())
   this->cancel_pending_ = false;
   this->people_stored_success_ = false;
   this->current_ask_retries_ = 0;
+  this->current_known_person_retries_ = 0;
 
 
   //TODO : When initializing we need to call StorePostmanAndKimble from main node
@@ -95,13 +96,21 @@ void CTask2Recognition::state_machine(void)
       if(this->start_recognition_){
         ROS_INFO("[TASK2Recognition]  Starting");
         this->start_recognition_ = false;
-        this->state = T2_CHECK_KNOWN_PERSON;
+        this->current_known_person_retries_ = 0;
+        this->current_ask_retries_ = 0;
+        this->state = T2_WAIT_ENTER;
         this->status = T2_RECOGNITION_RUNNING;
         this->visitor_recognised_ = false;
+        this->timeout.start(ros::Duration(this->config_.wait_enter_s));
+
       }
       break;
 
-
+    case T2_WAIT_ENTER:
+        if (this->timeout.timed_out()){
+            this->state = T2_CHECK_KNOWN_PERSON;
+        }
+        break;
     case T2_CHECK_KNOWN_PERSON:
       label = this->face_recognition.GetCurrentPerson();
       ROS_INFO("[TASK2Recognition] Check for known person");
@@ -130,7 +139,14 @@ void CTask2Recognition::state_machine(void)
         this->state = T2_RETURN_VISITOR;
       }
       else {
-        this->state = T2_ASK_PERSON;
+          if (this->current_known_person_retries_ >= this->config_.max_known_person_retries){
+              this->state = T2_ASK_PERSON;
+          }
+          else {
+              this->state = T2_CHECK_KNOWN_PERSON;
+              this->current_known_person_retries_++;
+          }
+
       }
       break;
 

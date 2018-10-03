@@ -55,6 +55,7 @@
 
 typedef enum {
     T2_IDLE,
+    T2_WAIT_ENTER,
     T2_CHECK_KNOWN_PERSON,
     T2_CHECK_POSTMAN,
     T2_ASK_PERSON,
@@ -108,6 +109,10 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
     CEchoModule speech;
     nen_common_msgs::EchoCmdResult speech_command_;
 
+
+    //timeout
+    CROSTimeout timeout;
+
     //Log module
     CLogModule logging;
     //Auxiliary variables to start task or ring bell from the dynamic_reconfigure
@@ -118,7 +123,7 @@ class CTask2Recognition : public CModule<task2_recognition::Task2RecognitionConf
     //Variables for the delays
     Person current_person_;
 
-
+    int current_known_person_retries_;
     int current_action_retries_;
     int current_ask_retries_;
     //State machines
